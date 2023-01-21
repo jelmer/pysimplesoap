@@ -33,6 +33,7 @@ setup(
     author_email=__author_email__,
     url='https://github.com/pysimplesoap/pysimplesoap',
     packages=['pysimplesoap'],
+    extras_require={'httplib2': ["httplib2>=0.7.7"]},
     license=__license__,
     # console=['client.py'],
     cmdclass={"py2exe": build_installer},

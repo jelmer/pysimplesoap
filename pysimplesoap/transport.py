@@ -64,19 +64,6 @@ class TransportBase:
 #
 try:
     import httplib2
-    if sys.version > '3' and LooseVersion(httplib2.__version__) <= LooseVersion("0.7.7"):
-        import http.client
-        # httplib2 workaround: check_hostname needs a SSL context with either 
-        #                      CERT_OPTIONAL or CERT_REQUIRED
-        # see https://code.google.com/p/httplib2/issues/detail?id=173
-        orig__init__ = http.client.HTTPSConnection.__init__ 
-        def fixer(self, host, port, key_file, cert_file, timeout, context,
-                        check_hostname, *args, **kwargs):
-            chk = kwargs.get('disable_ssl_certificate_validation', True) ^ True
-            orig__init__(self, host, port=port, key_file=key_file,
-                cert_file=cert_file, timeout=timeout, context=context,
-                check_hostname=chk)
-        http.client.HTTPSConnection.__init__ = fixer
 except ImportError:
     TIMEOUT = None  # timeout not supported by urllib2
     pass
@@ -93,12 +80,9 @@ else:
                 kwargs['proxy_info'] = httplib2.ProxyInfo(proxy_type=socks.PROXY_TYPE_HTTP, **proxy)
                 log.info("using proxy %s" % proxy)
 
-            # set optional parameters according to supported httplib2 version
-            if LooseVersion(httplib2.__version__) >= LooseVersion('0.3.0'):
-                kwargs['timeout'] = timeout
-            if LooseVersion(httplib2.__version__) >= LooseVersion('0.7.0'):
-                kwargs['disable_ssl_certificate_validation'] = cacert is None
-                kwargs['ca_certs'] = cacert
+            kwargs['timeout'] = timeout
+            kwargs['disable_ssl_certificate_validation'] = cacert is None
+            kwargs['ca_certs'] = cacert
             httplib2.Http.__init__(self, **kwargs)
 
     _http_connectors['httplib2'] = Httplib2Transport
